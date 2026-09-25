@@ -1,6 +1,6 @@
 # 📊 Megaline: Which Prepaid Plan Generates More Revenue?
 
-An analysis of customer behavior and statistical hypothesis testing to determine which of the two prepaid plans offered by telecom company **Megaline** — **Surf** or **Ultimate** — generates more revenue, in order to help guide the company's advertising budget decisions.
+A customer behavior analysis and statistical hypothesis testing project to determine which of two prepaid plans offered by telecom company **Megaline** — **Surf** or **Ultimate** — generates more revenue, in order to help guide the company's advertising budget decisions.
 
 ---
 
@@ -49,22 +49,16 @@ The data is organized into 5 tables:
 The notebook follows these steps:
 
 1. **Data loading**: reading the 5 CSV files (`users`, `calls`, `messages`, `internet`, `plans`) into separate DataFrames.
-2. **Diagnosis and preparation per table** (`plans`, `users`, `calls`, `messages`, `internet`): checking data types, missing values, and duplicates, with a written summary of each table's characteristics before any adjustments.
-3. **Data correction**:
-   - Converting `reg_date` and `churn_date` to `datetime`;
-   - Handling missing values in `churn_date` (customers still active at the time of data extraction).
-4. **Data enrichment**:
-   - Splitting the `city` column into MSA (*Metropolitan Statistical Area*) and city name, allowing the NY-NJ-PA area to be specifically identified;
-   - Extracting date components (day, month, year) to enable monthly aggregation.
-5. **Aggregation by user and month**:
-   - Total calls made and minutes used;
-   - Total messages sent;
-   - Total data used (MB/GB);
-   - Monthly revenue calculation (base fee + overage charges beyond each plan's allowance).
-6. **User behavior analysis**: descriptive statistics (mean, variance, standard deviation), histograms, and box plots comparing minutes, messages, and data usage between Surf and Ultimate users.
-7. **Hypothesis testing** (independent two-sample Student's t-test, `scipy.stats.ttest_ind`, two-tailed, α = 0.05):
+2. **Diagnosis and preparation per table**: checking data types, missing values, and duplicates, with a written summary of each table's characteristics before any adjustments.
+3. **Data correction**: converting date columns to `datetime`, and handling missing values in `churn_date` (customers still active at the time of data extraction).
+4. **Data enrichment**: splitting the `city` column into MSA (*Metropolitan Statistical Area*) and city name to specifically identify the NY-NJ-PA area, and extracting date components (day, month, year) to enable monthly aggregation.
+5. **Aggregation by user and month**: total calls and minutes used, total messages sent, total data used, and monthly revenue (base fee + overage charges beyond each plan's allowance).
+6. **User behavior analysis**: descriptive statistics (mean, variance, coefficient of variation), histograms, and box plots comparing minutes, messages, and data usage between Surf and Ultimate users.
+7. **Hypothesis testing** (independent two-sample Welch's t-test, `scipy.stats.ttest_ind` with `equal_var=False`, two-tailed, α = 0.05):
    - H₀: Ultimate's average revenue equals Surf's average revenue → H₁: they are different;
    - H₀: the NY-NJ area's average revenue equals the average revenue of other regions → H₁: they are different.
+
+   `equal_var=False` was used because the sample variances differed meaningfully between groups, making Welch's t-test the more appropriate choice over Student's standard t-test.
 8. **General conclusion** with a business recommendation for the commercial department.
 
 ---
@@ -91,7 +85,8 @@ The notebook follows these steps:
 │   └── megaline_users.csv
 ├── notebook.ipynb          # Main notebook with the full analysis
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── .gitignore
 ```
 
 ---
@@ -103,14 +98,14 @@ The notebook follows these steps:
 git clone https://github.com/pedrolocosta/megaline-plan-revenue-analysis.git
 cd megaline-plan-revenue-analysis
 
-# Create a virtual environment (optional, but recommended)
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Create a conda environment
+conda create -n megaline python=3.11
+conda activate megaline
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Open the notebook
+# Open the notebook in VS Code or Jupyter, and select the "megaline" kernel
 jupyter notebook notebook.ipynb
 ```
 
@@ -118,20 +113,21 @@ jupyter notebook notebook.ipynb
 
 ## 📈 Key Findings
 
-- **Usage patterns** (minutes, messages, and data per month) are quite similar between users of both plans, with high dispersion (variance) in both, as confirmed by the box plots.
-- Despite similar usage, **average revenue** differs between plans:
-  - **Surf**: base fee of $20, but observed average revenue of **$57.29** — most users exceed their allowance and pay additional charges.
-  - **Ultimate**: base fee of $70, with average revenue of **$72.11** — close to the flat fee, since the allowance is rarely exceeded.
-- Since means and variances were similar between groups, the hypothesis tests were run with `equal_var=True` (the default for `ttest_ind`).
-- Both hypothesis tests (Ultimate vs. Surf, and NY-NJ vs. other regions) were run at α = 0.05; the exact p-values and the resulting decision to reject/fail to reject H₀ are available in the notebook's output.
+- **Usage patterns** (minutes, messages, and data per month) are quite similar between users of both plans, but with high dispersion — coefficients of variation above 30% for most metrics — confirmed by the box plots.
+- Despite similar usage, **total and average revenue** differ sharply between plans:
+  - **Surf**: total revenue of **$95,491.18**, average of **$60.71**/month per user (base fee is $20 — most users exceed the allowance and pay overage charges).
+  - **Ultimate**: total revenue of **$52,066.00**, average of **$72.31**/month per user (close to the $70 flat fee, since the allowance is rarely exceeded).
+- **Surf generates nearly double the total revenue of Ultimate** in this sample, driven by a much larger user base (more than twice the user-months), even though its per-user average is lower.
+- **Hypothesis test 1 (Ultimate vs. Surf revenue)**: H₀ was rejected (p-value ≈ 3.17 × 10⁻¹⁵) — the difference in average revenue between plans is statistically significant and very strong.
+- **Hypothesis test 2 (NY-NJ vs. other regions)**: H₀ was also rejected (p-value ≈ 0.034), but this result is much closer to the 0.05 threshold, making the evidence considerably weaker than in the first test. It's also worth noting the sample includes repeated observations per user (not fully independent) and a strong imbalance in group sizes (NY-NJ is a small fraction of the total).
 
 ## 📝 Conclusion
 
-Although customer consumption behavior is similar across both plans, Surf users typically exceed their base allowance and end up paying additional charges that push their average revenue well above the monthly fee — though still below the Ultimate plan's revenue. This suggests customers aren't naturally incentivized to upgrade to the more expensive plan.
+Although customer consumption behavior is similar across both plans, Surf users typically exceed their base allowance and end up paying additional charges that push their average revenue well above the monthly fee — though still below the Ultimate plan's average. This suggests customers aren't naturally incentivized to upgrade to the more expensive plan.
 
-**Business recommendation**: work with the commercial department to evaluate creating an intermediate plan that captures this additional revenue more consistently, or reinforce marketing for the plan that currently shows higher average revenue (to be confirmed based on the statistical result of the first hypothesis test).
+Because the Surf plan has a much larger user base, it generates almost double the total revenue of Ultimate in this sample, making it the stronger candidate for additional advertising investment.
 
-> 📌 *This project is under active development — further refinements to the analysis and visualizations will be added in upcoming iterations.*
+**Business recommendation**: work with the commercial department to evaluate creating an intermediate plan that captures Surf users' additional spending more consistently, while continuing to prioritize the Surf plan in advertising given its higher aggregate revenue contribution.
 
 ---
 
