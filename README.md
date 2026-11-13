@@ -131,6 +131,23 @@ Because the Surf plan has a much larger user base, it generates almost double th
 
 ---
 
+## 🎓 Demonstrated Data Science Skills
+
+This project provides practical portfolio evidence of the following competencies relevant to Data Scientist roles:
+
+| Area | Skills demonstrated | Evidence in this project |
+| --- | --- | --- |
+| Data analysis | Python, Pandas, NumPy, data cleaning, data preprocessing, data aggregation | Prepared and combined five customer, usage, and pricing datasets into monthly revenue analyses. |
+| Exploratory Data Analysis (EDA) | Descriptive statistics, distributions, variance, coefficient of variation | Compared usage and revenue patterns with summary statistics, histograms, and box plots. |
+| Statistical analysis and inference | Hypothesis testing, Welch's two-sample t-test, p-value interpretation, significance level (α = 0.05), SciPy | Tested mean revenue differences between plans and between geographic groups using `scipy.stats.ttest_ind(equal_var=False)`. |
+| Data visualization | Matplotlib, histograms, box plots | Visualized customer behavior and variability across plans. |
+| Business analytics | Revenue analysis, data-driven decision-making, analytical communication | Connected statistical findings to advertising-budget and pricing recommendations. |
+| Reproducible analysis | Jupyter Notebook, requirements.txt, Git/GitHub | Documented the analysis workflow and dependencies in a version-controlled repository. |
+
+**Statistical interpretation and limitations:** The comparisons are observational, not randomized controlled experiments. Although they demonstrate hypothesis testing and group comparisons, they should not be described as a randomized **A/B test** or used to make causal claims. Repeated monthly observations from the same customers may violate the independence assumption of a standard two-sample t-test; the results should therefore be interpreted with caution. A follow-up analysis could aggregate at the customer level or use a method that accounts for repeated measurements.
+
+---
+
 ## 👤 Author
 
 **Pedro Lo Costa**
